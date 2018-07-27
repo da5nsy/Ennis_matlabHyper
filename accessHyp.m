@@ -1,5 +1,18 @@
 clear, clc, close all
 
+% Here I'm attempting to compute a stereotypical reflectance spectrum for
+% each object. 
+% I use the masks provided, and take the median of what remains outside 
+% the mask, assuming that this would roughly represent the spectrum of the
+% white space surrounding the object.
+% From the paper (fig 3) I know that the reflectance of the box material is
+% roughly uniform apart from below about 430nm.
+% I also know that the "CIE1931 xyY coordinates of the daylight like
+% illuminant were 0.3324; 0.3435; 36.97 cd?m2." which I should be able to
+% cross reference my results to.
+% It might be easier just to ask the authors for the spectra of the lamp...
+
+
 fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\pca';
 cd(fldr);
 fls = dir('*.mat'); %files
