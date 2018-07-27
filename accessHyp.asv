@@ -28,24 +28,13 @@ end
 fls(1).white = fls(1).hyper(70:90,1:15,:);
 fls(2).white = fls(2).hyper(205:215,55:80,:);
 
-%trying selecting white just using the mask
-fls(1).whiteFromMask = fls(i).hyper.*~fls(i).mask;
-figure, hold on
-plot(squeeze(fls(1).whiteFromMask(100,:,:))')
-fls(1).whiteFromMask(fls(1).whiteFromMask == 0) = NaN;
-plot(nanmedian(squeeze(fls(1).whiteFromMask(100,:,:))),'r','LineWidth',4)
-
-
 %% plot 'white' spectra
 
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-figure, hold on
-i=1;
-plot(wlns,reshape(fls(i).white,size(fls(i).white,1)*size(fls(i).white,2),size(fls(i).white,3)),'r')
 i=2;
-plot(wlns,reshape(fls(i).white,size(fls(i).white,1)*size(fls(i).white,2),size(fls(i).white,3)),'g')
+plot(wlns,reshape(fls(i).white,size(fls(i).white,1)*size(fls(i).white,2),size(fls(i).white,3)),'r')
 
 %% convert the hyperspectral image to its linear RGB and
 % CIE1931 XYZ representation
