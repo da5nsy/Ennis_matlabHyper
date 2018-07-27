@@ -1,8 +1,6 @@
-clear, clc, close all
-
 % Here I'm attempting to compute a stereotypical reflectance spectrum for
-% each object. 
-% I use the masks provided, and take the median of what remains outside 
+% each object.
+% I use the masks provided, and take the median of what remains outside
 % the mask, assuming that this would roughly represent the spectrum of the
 % white space surrounding the object.
 % From the paper (fig 3) I know that the reflectance of the box material is
@@ -12,10 +10,15 @@ clear, clc, close all
 % cross reference my results to.
 % It might be easier just to ask the authors for the spectra of the lamp...
 
+clear, clc, close all
 
-fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\pca';
-cd(fldr);
-fls = dir('*.mat'); %files
+fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\pca\';
+fls = dir([fldr,'*','.mat']); %files
+
+%%
+
+wlns = csvread('hyperWavelengths.csv');
+wlns = wlns(20:364);
 
 for i=1:3%length(fls)
     filename = [fldr,'\',fls(i).name];
@@ -26,27 +29,31 @@ for i=1:3%length(fls)
     
     % gamma correct the linear RGB image
     fls(i).grgb = gammaCorr(fls(i).rgb);
-
-    disp(i)
+    
+    fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask;
+    fls(i).whiteFromMask = reshape(fls(i).whiteFromMask,size(fls(i).whiteFromMask,1)*size(fls(i).whiteFromMask,2),size(fls(i).whiteFromMask,3))';
+    fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN;
+    fls(i).whiteFromMaskMedian = nanmedian(fls(i).whiteFromMask,2);
+    
+    figure, hold on
+    plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
+    plot(wlns,fls(i).whiteFromMaskMedian,'r:','LineWidth',3)
+    drawnow
 end
 %%
-close all
 
-for i=1:3
-    figure,
-    imagesc(fls(i).grgb.*~fls(i).mask);
-end
+wlns = csvread('hyperWavelengths.csv');
+wlns = wlns(20:364);
 
-%selecting white sections of 'floor', preferably from behind the object
-fls(1).white = fls(1).hyper(70:90,1:15,:);
-fls(2).white = fls(2).hyper(205:215,55:80,:);
+%selecting white just using the mask
+fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask;
+fls(i).whiteFromMask = reshape(fls(i).whiteFromMask,size(fls(i).whiteFromMask,1)*size(fls(i).whiteFromMask,2),size(fls(i).whiteFromMask,3))';
+fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN;
+fls(i).whiteFromMaskMedian = nanmedian(fls(i).whiteFromMask,2);
 
-%trying selecting white just using the mask
-fls(1).whiteFromMask = fls(i).hyper.*~fls(i).mask;
 figure, hold on
-plot(squeeze(fls(1).whiteFromMask(100,:,:))')
-fls(1).whiteFromMask(fls(1).whiteFromMask == 0) = NaN;
-plot(nanmedian(squeeze(fls(1).whiteFromMask(100,:,:))),'r','LineWidth',4)
+plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
+plot(wlns,fls(i).whiteFromMaskMedian,'r:','LineWidth',3)
 
 
 %% plot 'white' spectra
