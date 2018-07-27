@@ -16,30 +16,40 @@ fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\
 fls = dir([fldr,'*','.mat']); %files
 
 %%
+rgb = 0;
 
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:3%length(fls)
+for i=1:length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
     fls(i).mask  = fls(i).mask(:,:,1);
-    [fls(i).rgb, ~] = colormatch(fls(i).hyper);
     
-    % gamma correct the linear RGB image
-    fls(i).grgb = gammaCorr(fls(i).rgb);
+    if rgb
+        [fls(i).rgb, ~] = colormatch(fls(i).hyper);        
+        % gamma correct the linear RGB image
+        fls(i).grgb = gammaCorr(fls(i).rgb);
+    end
     
-    fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask;
+    fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask; 
     fls(i).whiteFromMask = reshape(fls(i).whiteFromMask,size(fls(i).whiteFromMask,1)*size(fls(i).whiteFromMask,2),size(fls(i).whiteFromMask,3))';
-    fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN;
-    fls(i).whiteFromMaskMedian = nanmedian(fls(i).whiteFromMask,2);
+    fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN; %make zeros nans for better averaging
+    fls(i).whiteFromMaskAv = prctile(fls(i).whiteFromMask,95,2);
     
-    figure, hold on
-    plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
-    plot(wlns,fls(i).whiteFromMaskMedian,'r:','LineWidth',3)
-    drawnow
+    % plot individual image data as you go
+    %     figure, hold on
+    %     plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
+    %     plot(wlns,fls(i).whiteFromMaskAv,'r:','LineWidth',3)
+    %     drawnow
+    
+    hold on
+    plot(wlns,fls(i).whiteFromMaskAv)
+    
+    disp(i) % simple progress counter
 end
+
 %%
 
 wlns = csvread('hyperWavelengths.csv');
