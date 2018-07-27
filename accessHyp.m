@@ -16,7 +16,8 @@ fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\
 fls = dir([fldr,'*','.mat']); %files
 
 %%
-rgb = 0;
+rgb   = 1; %calculate rgb data for each dataset
+plt_i = 1; %plot individual white data
 
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
@@ -28,62 +29,36 @@ for i=1:length(fls)
     fls(i).mask  = fls(i).mask(:,:,1);
     
     if rgb
-        [fls(i).rgb, ~] = colormatch(fls(i).hyper);        
+        [fls(i).rgb, ~] = colormatch(fls(i).hyper);
         % gamma correct the linear RGB image
         fls(i).grgb = gammaCorr(fls(i).rgb);
     end
     
-    fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask; 
+    fls(i).whiteFromMask = fls(i).hyper(1:45,:,:).*~fls(i).mask(1:45,:,:);
     fls(i).whiteFromMask = reshape(fls(i).whiteFromMask,size(fls(i).whiteFromMask,1)*size(fls(i).whiteFromMask,2),size(fls(i).whiteFromMask,3))';
     fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN; %make zeros nans for better averaging
     fls(i).whiteFromMaskAv = prctile(fls(i).whiteFromMask,95,2);
     
-    % plot individual image data as you go
-    %     figure, hold on
-    %     plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
-    %     plot(wlns,fls(i).whiteFromMaskAv,'r:','LineWidth',3)
-    %     drawnow
+    if plt_i
+        % plot individual image data as you go
+        figure, hold on
+        plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
+        plot(wlns,fls(i).whiteFromMaskAv,'r:','LineWidth',3)
+        drawnow
+    end
     
-    hold on
+    figure(100),hold on
     plot(wlns,fls(i).whiteFromMaskAv)
     
     disp(i) % simple progress counter
 end
 
 %%
-
-wlns = csvread('hyperWavelengths.csv');
-wlns = wlns(20:364);
-
-%selecting white just using the mask
-fls(i).whiteFromMask = fls(i).hyper.*~fls(i).mask;
-fls(i).whiteFromMask = reshape(fls(i).whiteFromMask,size(fls(i).whiteFromMask,1)*size(fls(i).whiteFromMask,2),size(fls(i).whiteFromMask,3))';
-fls(i).whiteFromMask(fls(i).whiteFromMask == 0) = NaN;
-fls(i).whiteFromMaskMedian = nanmedian(fls(i).whiteFromMask,2);
-
-figure, hold on
-plot(wlns,fls(i).whiteFromMask(:,1:50:end),'k')
-plot(wlns,fls(i).whiteFromMaskMedian,'r:','LineWidth',3)
-
-
-%% plot 'white' spectra
-
-wlns = csvread('hyperWavelengths.csv');
-wlns = wlns(20:364);
-
-figure, hold on
-i=1;
-plot(wlns,reshape(fls(i).white,size(fls(i).white,1)*size(fls(i).white,2),size(fls(i).white,3)),'r')
-i=2;
-plot(wlns,reshape(fls(i).white,size(fls(i).white,1)*size(fls(i).white,2),size(fls(i).white,3)),'g')
-
-%% convert the hyperspectral image to its linear RGB and
-% CIE1931 XYZ representation
-[rgb, xyz] = colormatch(hyper);
-
-% gamma correct the linear RGB image
-grgb = gammaCorr(rgb);
-
-% display the gamma corrected image
-figure,
-imshow(grgb);
+for i=39 %39 is a red pepper and gives a weird white rating because the stem is included in the ~mask space
+    %grgb is complex for some reason, and so I'm brute forcing the non
+    %   gamma corrected image
+    figure
+%    imagesc(fls(i).rgb*50)
+    imagesc((fls(i).rgb(1:45,:,:).*~fls(i).mask(1:45,:,:))*20)
+end
+axis equal
