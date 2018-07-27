@@ -49,9 +49,15 @@ for i=1:length(fls)
     
     figure(100),hold on
     plot(wlns,fls(i).whiteFromMaskAv)
+    w(:,i) = fls(i).whiteFromMaskAv;
     
     disp(i) % simple progress counter
 end
+
+%replot with overall median 
+figure(100),hold on
+plot(wlns,w)
+plot(wlns,median(w,2),'g:','LineWidth',3)
 
 %%
 for i=39 %39 is a red pepper and gives a weird white rating because the stem is included in the ~mask space
@@ -62,3 +68,13 @@ for i=39 %39 is a red pepper and gives a weird white rating because the stem is 
     imagesc((fls(i).rgb(1:45,:,:).*~fls(i).mask(1:45,:,:))*20)
 end
 axis equal
+
+%%
+
+load T_xyz1931.mat %PsychToolbox
+XYZ = median(w,2)'*interp1(SToWls(S_xyz1931),T_xyz1931',wlns); %PTB
+xy = [XYZ(1)/sum(XYZ);XYZ(2)/sum(XYZ)];
+Y = XYZ(2) * 683;
+
+%that's roughly in line with what I would expect from taking roughly 80% of
+%the power out of the lights from refelctions
