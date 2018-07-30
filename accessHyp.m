@@ -19,7 +19,7 @@ fls = dir([fldr,'*','.mat']); %files
 
 %%
 rgb   = 1; %calculate rgb data for each dataset
-plt_i = 1; %plot individual white data
+plt_i = 0; %plot individual white data
 
 % - % If you only want wlns and w (the spectrus) then:
 load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\results.mat')
@@ -27,14 +27,14 @@ load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyp
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:length(fls)
+for i=1:5%length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
     fls(i).mask  = fls(i).mask(:,:,1);
     
     if rgb
-        [fls(i).rgb, ~] = colormatch(fls(i).hyper);
+        [fls(i).rgb, fls(i).XYZ] = colormatch(fls(i).hyper);
         % gamma correct the linear RGB image
         fls(i).grgb = gammaCorr(fls(i).rgb);
     end
@@ -52,17 +52,17 @@ for i=1:length(fls)
         drawnow
     end
     
-    figure(100),hold on
-    plot(wlns,fls(i).whiteFromMaskAv)
+%     figure(100),hold on
+%     plot(wlns,fls(i).whiteFromMaskAv)
     w(:,i) = fls(i).whiteFromMaskAv;
     
     disp(i) % simple progress counter
 end
 
-%replot with overall median 
-figure(100),hold on
-plot(wlns,w)
-plot(wlns,median(w,2),'g:','LineWidth',3)
+% %replot with overall median 
+% figure(100),hold on
+% plot(wlns,w)
+% plot(wlns,median(w,2),'g:','LineWidth',3)
 
 %%
 for i=39 %39 is a red pepper and gives a weird white rating because the stem is included in the ~mask space
@@ -83,3 +83,11 @@ Y = XYZ(2) * 683;
 
 %that's roughly in line with what I would expect from taking roughly 80% of
 %the power out of the lights from refelctions
+
+%% Calculate reflectances for objects
+i=3;
+imagesc(fls(i).grgb.*fls(i).mask)
+axis equal
+
+
+
