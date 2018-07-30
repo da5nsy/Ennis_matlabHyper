@@ -27,7 +27,7 @@ load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyp
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:length(fls)
+for i=1:10%length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
@@ -129,4 +129,16 @@ for i=1:10
     
     plot(380:780,fls(i).ref);
 end
+
+%%
+load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\results.mat');
+wht = w(:,1); clear w
+
+figure, hold on
+for i=1:10
+    fls(i).av= median(reshape(fls(i).hs,size(fls(i).hs,1)*size(fls(i).hs,2),345));
+    fls(i).ref = fls(i).av./wht';
+    plot(wlns,fls(i).ref);
+end
+
 
