@@ -2,13 +2,15 @@
 % each object.
 % I use the masks provided, and take the median of what remains outside
 % the mask, assuming that this would roughly represent the spectrum of the
-% white space surrounding the object.
+% white space surrounding the object (though this definitely isn't ideal 
+% and throw up some really clear problems)
 % From the paper (fig 3) I know that the reflectance of the box material is
 % roughly uniform apart from below about 430nm.
 % I also know that the "CIE1931 xyY coordinates of the daylight like
 % illuminant were 0.3324; 0.3435; 36.97 cd?m2." which I should be able to
 % cross reference my results to.
-% It might be easier just to ask the authors for the spectra of the lamp...
+% On request the authors kindly provided the lamp SPD. I should ask whether
+% I can upload it to this git repository.
 
 clear, clc, close all
 
@@ -18,6 +20,9 @@ fls = dir([fldr,'*','.mat']); %files
 %%
 rgb   = 1; %calculate rgb data for each dataset
 plt_i = 1; %plot individual white data
+
+% - % If you only want wlns and w (the spectrus) then:
+load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\results.mat')
 
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
