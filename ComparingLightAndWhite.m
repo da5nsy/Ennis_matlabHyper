@@ -56,3 +56,4 @@ plot(thor_light_wlns,(thor_light.*thor_filt_int)/max(thor_light.*thor_filt_int),
 ylim([-0.1 1])
 xlabel('Wavelength(nm)')
 ylabel('normalised power')
+legend('Location','Best')
