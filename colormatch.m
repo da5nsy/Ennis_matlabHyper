@@ -12,7 +12,6 @@ function [RGBimg, XYZimg] = colormatch(DAT)
     end
 
     cmf(cmf < 0) = 0;
-    DAT(DAT < 0) = 0;
 
     w = size(DAT,2);
     h = size(DAT,1);
@@ -48,4 +47,5 @@ function [RGBimg, XYZimg] = colormatch(DAT)
 
     RGBimg = XYZ2RGB(XYZ', monxyY);
     RGBimg = cat(3, reshape(RGBimg(1,:), h, w), reshape(RGBimg(2,:), h, w), reshape(RGBimg(3,:), h, w));
+    RGBimg(RGBimg < 0) = 0;
 end

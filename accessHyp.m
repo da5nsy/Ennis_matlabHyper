@@ -27,7 +27,7 @@ load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyp
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:5%length(fls)
+for i=1:3%length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
@@ -85,7 +85,7 @@ Y = XYZ(2) * 683;
 %the power out of the lights from refelctions
 
 %% Calculate reflectances for objects
-i=3;
+i=2;
 imagesc(fls(i).grgb.*fls(i).mask)
 axis equal
 
