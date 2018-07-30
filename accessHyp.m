@@ -27,7 +27,7 @@ load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyp
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:3%length(fls)
+for i=1:length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
@@ -74,7 +74,7 @@ for i=39 %39 is a red pepper and gives a weird white rating because the stem is 
 end
 axis equal
 
-%%
+%% Check colorimetry of white vs the colorimetry quoted in the paper
 
 load T_xyz1931.mat %PsychToolbox
 XYZ = median(w,2)'*interp1(SToWls(S_xyz1931),T_xyz1931',wlns); %PTB
@@ -85,9 +85,48 @@ Y = XYZ(2) * 683;
 %the power out of the lights from refelctions
 
 %% Calculate reflectances for objects
-i=2;
-imagesc(fls(i).grgb.*fls(i).mask)
+
+i=10;
+imagesc(fls(i).grgb.*fls(i).mask) %show original image, zoom in and select
 axis equal
 
+%avoiding specular highlights, aiming for normal of 45deg, which
+%practically means just aiming for the upper half of the image
+fls(1).hs = fls(1).hyper(70:110, 70:120,:); %hyper selection
+fls(2).hs = fls(2).hyper(140:200, 530:630,:); 
+fls(3).hs = fls(3).hyper(150:200, 350:400,:); 
+fls(4).hs = fls(4).hyper(115:160, 210:290,:); 
+fls(5).hs = fls(5).hyper(11:16, 88:93,:);
+fls(6).hs = fls(6).hyper(54:74, 45:80,:); 
+fls(7).hs = fls(7).hyper(19:25, 60:72,:); 
+fls(8).hs = fls(8).hyper(30:70, 260:360,:); 
+fls(9).hs = fls(9).hyper(100:200, 50:350,:);
+fls(10).hs = fls(10).hyper(100:150, 360:460,:);
 
+
+% figure, hold on
+% plot(reshape(fls(2).hs,61*101,345)','k') %plot hs
+% fls(2).av= median(reshape(fls(2).hs,61*101,345));
+% plot(fls(2).av,'r');
+
+%%
+
+load('C:\Users\cege-user\Downloads\thorlabs.mat');
+wht = spectra(1).spectralData; clear spectra
+
+figure, hold on
+for i=1:10
+    fls(i).av= median(reshape(fls(i).hs,size(fls(i).hs,1)*size(fls(i).hs,2),345));
+    fls(i).av_i = interp1(wlns,fls(i).av,380:780);
+    
+    fls(i).av_i(isnan(fls(i).av_i)) = 0;
+    % figure, hold on
+    % plot(wlns,fls(i).av,'g')
+    % plot(380:780,fls(i).av_i,'r:')
+    
+    
+    fls(i).ref = fls(i).av_i./wht';
+    
+    plot(380:780,fls(i).ref);
+end
 
