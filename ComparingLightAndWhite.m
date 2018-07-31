@@ -7,7 +7,7 @@ clc, clear, close all
 
 %% 1
 
-load('C:\Users\cege-user\Downloads\thorlabs.mat')
+load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\Light measurements\thorlabs_lightMeasurement.mat');
 
 % figure,
 % col=hsv(3);
