@@ -27,7 +27,7 @@ load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyp
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:10%length(fls)
+for i=1:length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
@@ -59,10 +59,18 @@ for i=1:10%length(fls)
     disp(i) % simple progress counter
 end
 
-% %replot with overall median 
-% figure(100),hold on
-% plot(wlns,w)
-% plot(wlns,median(w,2),'g:','LineWidth',3)
+%replot with overall median 
+figure(100),hold on
+plot(wlns,w)
+plot(wlns,median(w,2),'g:','LineWidth',3)
+
+
+for i = 1:length(fls)
+    figure,
+    imagesc(fls(i).grgb)
+end
+
+avo_white = squeeze(fls(3).hyper(52,181,:));
 
 %%
 for i=39 %39 is a red pepper and gives a weird white rating because the stem is included in the ~mask space
@@ -84,9 +92,10 @@ Y = XYZ(2) * 683;
 %that's roughly in line with what I would expect from taking roughly 80% of
 %the power out of the lights from refelctions
 
-%% Calculate reflectances for objects
+%% Pick out areas of each image from where a reflectance could be calculated
 
 i=10;
+figure,
 imagesc(fls(i).grgb.*fls(i).mask) %show original image, zoom in and select
 axis equal
 
@@ -103,42 +112,66 @@ fls(8).hs = fls(8).hyper(30:70, 260:360,:);
 fls(9).hs = fls(9).hyper(100:200, 50:350,:);
 fls(10).hs = fls(10).hyper(100:150, 360:460,:);
 
+% I've only bothered doing the first 10 for now
+
+% Would be good to visualise this to check that I've picked sensible areas
+%   and haven't typo'd
 
 % figure, hold on
 % plot(reshape(fls(2).hs,61*101,345)','k') %plot hs
 % fls(2).av= median(reshape(fls(2).hs,61*101,345));
 % plot(fls(2).av,'r');
 
-%%
-
-load('C:\Users\cege-user\Downloads\thorlabs.mat');
-wht = spectra(1).spectralData; clear spectra
-
 figure, hold on
-for i=1:10
+for i=1:length(fls)
     fls(i).av= median(reshape(fls(i).hs,size(fls(i).hs,1)*size(fls(i).hs,2),345));
     fls(i).av_i = interp1(wlns,fls(i).av,380:780);
     
     fls(i).av_i(isnan(fls(i).av_i)) = 0;
-    % figure, hold on
-    % plot(wlns,fls(i).av,'g')
-    % plot(380:780,fls(i).av_i,'r:')
     
-    
-    fls(i).ref = fls(i).av_i./wht';
-    
-    plot(380:780,fls(i).ref);
+    plot(380:780,fls(i).av_i)
 end
+title('Average spectral radiance from chosen patches')
 
-%%
+%% Compare white and light
+
+load('C:\Users\cege-user\Downloads\thorlabs.mat');
+light = spectra(1).spectralData; clear spectra
+
 load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\results.mat');
 wht = w(:,1); clear w
 
 figure, hold on
-for i=1:10
-    fls(i).av= median(reshape(fls(i).hs,size(fls(i).hs,1)*size(fls(i).hs,2),345));
+plot(380:780,light,'DisplayName','Light (Ennis)');
+plot(wlns,wht,'DisplayName','White wall, measured from images');
+plot(wlns,avo_white,'DisplayName','Avo white')
+
+legend('Location','Best')
+
+%% Calculate refelctance using light measurement from Ennis
+%       and then using white measurement taken from back wall of cube in hyp images
+clc
+colors = hsv(10);
+
+figure, hold on
+for i=10%1:10
+    fls(i).ref = fls(i).av_i./light';    
+    plot(380:780,fls(i).ref,'Color',colors(i,:),'DisplayName','Light (Ennis)');
+
     fls(i).ref = fls(i).av./wht';
-    plot(wlns,fls(i).ref);
+    plot(wlns,fls(i).ref,':','Color',colors(i,:),'DisplayName','Sampled white');
 end
 
+legend('Location','Best')
 
+% Comparing to apple spd in doi: 10.1016/S0925-5214(02)00066-2
+% This apple is red/yellow
+
+%%
+wht_i = interp1(wlns,wht,380:780);
+wht_i(isnan(wht_i))=0;
+
+figure,
+plot(wht_r)
+
+wht_r = wht_i./light';
