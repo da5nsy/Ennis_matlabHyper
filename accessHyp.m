@@ -26,7 +26,7 @@ plt_i = 0; %plot individual white data
 wlns = csvread('hyperWavelengths.csv');
 wlns = wlns(20:364);
 
-for i=1:length(fls)
+for i=1:10%length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
     fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
@@ -79,19 +79,6 @@ avo_white = squeeze(fls(3).hyper(52,181,:)); %The avocado has quite a shiny surf
 % imagesc(fls(i).grgb) %show original image, zoom in and select
 % axis equal
 
-% %avoiding specular highlights, aiming for normal of 45deg, which
-% %practically means just aiming for the upper half of the image
-% fls(1).hs = fls(1).hyper(70:110, 70:120,:); 
-% fls(2).hs = fls(2).hyper(140:200, 530:630,:); 
-% fls(3).hs = fls(3).hyper(150:200, 350:400,:); 
-% fls(4).hs = fls(4).hyper(115:160, 210:290,:); 
-% fls(5).hs = fls(5).hyper(11:16, 88:93,:);
-% fls(6).hs = fls(6).hyper(54:74, 45:80,:); 
-% fls(7).hs = fls(7).hyper(19:25, 60:72,:); 
-% fls(8).hs = fls(8).hyper(30:70, 260:360,:); 
-% fls(9).hs = fls(9).hyper(100:200, 50:350,:);
-% fls(10).hs = fls(10).hyper(100:150, 360:460,:);
-
 fls(1).loc = [70,120,70,110]; %loc: 'location', x then y, origin top left
 fls(2).loc = [530,630,140,200];
 fls(3).loc = [350,400,150,200];
@@ -130,8 +117,10 @@ figure(100), hold on
 
 load('C:\Users\cege-user\Dropbox\Documents\MATLAB\Downloaded functions\matlabHyper\Light measurements\thorlabs_lightMeasurement.mat');
 mlight = spectra(1).spectralData; clear spectra
-plot(380:780,mlight,'DisplayName','Spectralon (Ennis)') %Pre-plot light
+plot(380:780,mlight,'LineWidth',2,'DisplayName','Spectralon (Ennis)') %Pre-plot light
+plot(wlns,median(w,2),'LineWidth',2,'DisplayName','White box average') %Pre-plot white
 
+colors = hsv(10);
 for i=1:10
     
     if plt_i
@@ -147,9 +136,9 @@ for i=1:10
     fls(i).av_i(isnan(fls(i).av_i)) = 0;
     
     figure(100),
-    plot(380:780,fls(i).av_i,'DisplayName',fls(i).name(1:regexp(fls(i).name,'_')-1))
+    plot(380:780,fls(i).av_i,'Color',colors(i,:),'DisplayName',fls(i).name(1:regexp(fls(i).name,'_')-1))
 end
-title('Average spectral radiance from chosen patches')
+title('Average spectral radiance from chosen patches, plus references')
 legend('Location','Best')
 
 %% Calculate refelctance using light measurement from Ennis
@@ -162,10 +151,33 @@ colors = hsv(10);
 
 figure, hold on
 for i=1:10
-    fls(i).ref = fls(i).av_i./mlight';    
-    plot(380:780,fls(i).ref,'Color',colors(i,:),'DisplayName',fls(i).name(1:regexp(fls(i).name,'_')-1))
+    fls(i).ref_fromSpectralon = fls(i).av_i./mlight';    
+    plot(380:780,fls(i).ref_fromSpectralon,'Color',colors(i,:),'DisplayName',fls(i).name(1:regexp(fls(i).name,'_')-1))
 end
 xlim([380 780])
 ylim([0 1])
+title('Reflectance computed from measurement of spectralon')
 
 legend('Location','Best')
+
+%% Calculate refelctance using white wall measurements
+
+colors = hsv(10);
+
+figure, hold on
+for i=1:10
+    fls(i).ref_fromWhite = fls(i).av./median(w,2)';    
+    plot(wlns,fls(i).ref_fromWhite,'Color',colors(i,:),'DisplayName',fls(i).name(1:regexp(fls(i).name,'_')-1))
+end
+%xlim([380 780])
+%ylim([0 1])
+title('Reflectance computed from white of box')
+
+legend('Location','Best')
+
+%% compare with cone sensitivities
+% required PsychToolbox (3)
+
+load T_cones_ss10
+plot(SToWls(S_cones_ss10),T_cones_ss10)
+
