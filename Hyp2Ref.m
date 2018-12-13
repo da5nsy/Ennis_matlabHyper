@@ -13,7 +13,9 @@
 
 clear, clc, close all
 
-fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis Data\skins_pca\pca\';
+%fldr = 'C:\Users\cege-user\Dropbox\UCL\Data\Reference Data\Ennis
+%Data\skins_pca\pca\'; %76
+fldr = 'C:\Users\cege-user\Documents\Large data\Ennis Data\skins_pca\pca\'; %65
 fls = dir([fldr,'*','.mat']); %files
 
 %%
@@ -29,7 +31,7 @@ wlns = wlns(20:364);
 for i=1:10%length(fls)
     filename = [fldr,'\',fls(i).name];
     fls(i).hyper = readCompressedDAT(filename);
-    fls(i).mask  = logical(imread([fldr(1:62),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
+    fls(i).mask  = logical(imread([fldr(1:end-14),'skins_masks\masks\',fls(i).name(1:regexp(fls(i).name,'_')),'CroppedMask.png']));
     fls(i).mask  = fls(i).mask(:,:,1);
     
     if rgb
@@ -72,6 +74,7 @@ plot(wlns,median(w,2),'g:','LineWidth',3)
 
 avo_white = squeeze(fls(3).hyper(52,181,:)); %The avocado has quite a shiny surface, this might theoretically be useful as a standard for the lighting (?)
 
+%save('results.mat','w','wlns')
 %% Pick out areas of each image from where a reflectance could be calculated
 
 % i=1;
